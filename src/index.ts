@@ -1,60 +1,97 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import 'dotenv/config'
-import { Message } from 'node-telegram-bot-api';
-const TelegramBot = require('node-telegram-bot-api');
-const app = express();
-const port = 3000;
+require('dotenv').config()
 
-// Подключение к базе данных MongoDB (замените URL и dbName на свои)
-mongoose.connect('mongodb://localhost:27017/dbName');
+import { Telegraf, Context } from 'telegraf';
 
-// Определение схемы и модели для заявок
-const requestSchema = new mongoose.Schema({
-  userId: String,
-  language: String,
-  documents: String,
-  status: String,
-}, { timestamps: true });
+const { TELEGRAM_TOKEN } = process.env;
 
-const Request = mongoose.model('Request', requestSchema);
+const bot = new Telegraf(TELEGRAM_TOKEN || '');
 
-// Настройка Telegram бота
-const token = process.env.TELEGRAM_TOKEN;
-const bot = new TelegramBot(token, { polling: true });
 
-bot.onText(/\/start/, (msg: Message) => {
-  const chatId = msg.chat.id;
 
-  bot.sendMessage(chatId, 'Пожалуйста, выберите ваш язык:', {
-    reply_markup: {
-      keyboard: [['Deutsch', 'English', 'Español']],
-      resize_keyboard: true,
-      one_time_keyboard: true,
-    },
-  });
+// Хранение состояний клиента
+const clientStates = new Map<
+  number,
+  { language?: string; certifiedTranslation?: boolean; documents?: string }
+>();
+
+// Команда /start
+bot.start((ctx: Context) => {
+  const chatId = ctx.chat?.id;
+
+  if (chatId) {
+    ctx.reply("Пожалуйста, выберите ваш язык:", {
+      reply_markup: {
+        keyboard: [["Deutsch", "English", "Español"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
+
+    clientStates.set(chatId, {
+      language: undefined,
+      certifiedTranslation: undefined,
+      documents: undefined,
+    });
+  }
 });
 
-bot.onText(/(Deutsch|English|Español)/, (msg: Message) => {
-  const chatId = msg.chat.id;
-  const userId = msg.from?.id.toString();
-  const language = msg.text;
+// Обработка ответов от пользователя
+bot.hears(/(Deutsch|English|Español)/, (ctx: Context) => {
+  const chatId = ctx.chat?.id;
+  const clientState = chatId ? clientStates.get(chatId) : undefined;
 
-  bot.sendMessage(chatId, 'Добрый день! Чем мы можем вам помочь? Вам нужен перевод или устный перевод?');
-
-  // Создание новой заявки
-  const newRequest = new Request({
-    userId,
-    language,
-    documents: '',
-    status: 'pending',
-  });
-
-  newRequest.save();
+  if (clientState && ctx.message && 'text' in ctx.message) {
+    const language = ctx.message.text?.match(/(Deutsch|English|Español)/)?.[0];
+    if (language) {
+      clientState.language = language;
+      ctx.reply('Добрый день! Чем мы можем вам помочь? Вам нужен перевод или устный перевод?'), {
+        reply_markup: {
+          keyboard: [["перевод", "устный перевод"]],
+          resize_keyboard: true,
+          one_time_keyboard: true,
+        },
+      };
+    }
+  }
 });
 
-// Добавьте логику для следующих шагов диалога и обработку заявок
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+
+
+
+bot.hears("перевод", (ctx: Context) => {
+  const chatId = ctx.chat?.id;
+  const clientState = chatId ? clientStates.get(chatId) : undefined;
+
+  if (chatId && clientState) {
+    ctx.reply("На какой язык нужно перевести?");
+  }
+});
+
+bot.hears(
+  /(с немецкого на английский|from German to English)/,
+  (ctx: Context) => {
+    const chatId = ctx.chat?.id;
+    const clientState = chatId ? clientStates.get(chatId) : undefined;
+
+    if (chatId && clientState) {
+      ctx.reply("Должен ли перевод быть заверенным?");
+    }
+  }
+);
+
+bot.hears(/(да|yes)/, (ctx: Context) => {
+  const chatId = ctx.chat?.id;
+  const clientState = chatId ? clientStates.get(chatId) : undefined;
+
+  if (chatId && clientState) {
+    ctx.reply("Пожалуйста, загрузите документы для перевода.");
+  }
+});
+
+// Добавьте обработку загрузки документов и остальные шаги сценария
+
+// Запустите бот
+bot.launch().then(() => {
+  console.log("Bot has been started");
 });
