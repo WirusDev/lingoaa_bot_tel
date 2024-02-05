@@ -1,22 +1,11 @@
-const languageArray = [
-  "🇩🇪 Deutsch",
-  "🇺🇸 English",
-  "🇺🇦 Ukrainisch",
-  "🇷🇺 Russisch",
-  "🇷🇺 Russisch",
+const languageArray = ["🇩🇪 Deutsch", "🇺🇸 English", "🇷🇺 Russisch"];
+
+const languageArray2 = [
+  { language: "🇩🇪 Deutsch", lid: "de" },
+  { language: "🇺🇸 English", lid: "en" },
+  { language: "🇷🇺 Russisch", lid: "ru" },
 ];
 
-function testFunc(array: string[]) {
-  const sortetArray = [];
-  for (let i = 0; i < array.length; i++) {
-    const element = array[i];
-    sortetArray.push(element);
-  }
-  //console.log(sortetArray.join("|"));
+const sortetArray = languageArray.join("|");
 
-  return sortetArray.join("|");
-}
-
-const sortetArray = testFunc(languageArray);
-
-export { languageArray, sortetArray };
+export { languageArray, sortetArray, languageArray2 };
