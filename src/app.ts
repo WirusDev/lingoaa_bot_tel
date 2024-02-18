@@ -5,6 +5,7 @@ import { botMessages } from "./data/reply";
 import { log } from "console";
 import { get } from "http";
 import { button } from "telegraf/typings/markup";
+import nodemailer from "nodemailer";
 
 require("dotenv").config();
 
@@ -39,7 +40,8 @@ interface MyContext extends Context {
   session?: SessionData;
 }
 
-const { TELEGRAM_TOKEN } = process.env;
+const { TELEGRAM_TOKEN, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_HOST } =
+  process.env;
 if (TELEGRAM_TOKEN === undefined) {
   throw new TypeError("TELEGRAM_TOKEN must be provided!");
 }
@@ -116,26 +118,64 @@ bot.start(async (ctx) => {
   console.log(ctx.session);
 });
 
-//Обработка ответов от пользователя
-// bot.hears(languageArray, async (ctx) => {
-//   const chatId = ctx.chat?.id;
-//   console.log(chatId);
+// Handle document uploads
+bot.on("document", async (ctx) => {
+  if (ctx.session === undefined) {
+    ctx.reply(`Session is undefined, please press /start`, {
+      reply_markup: {
+        keyboard: [["/start"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
+    return;
+  }
+  const document = ctx.message.document;
+  const fileId = document.file_id;
 
-//   if (ctx.session === undefined) {
-//     ctx.reply(`You dint have status yet`);
-//     return;
-//   }
-//   ctx.session.language = ctx.message.text;
-//   await ctx.reply(
-//     "Добрый день! Чем мы можем вам помочь? Вам нужен перевод или устный перевод?" +
-//       ctx.session.language,
-//     {
-//       reply_markup: {
-//         remove_keyboard: true,
-//       },
-//     }
-//   );
-// });
+  // Get the file path from Telegram
+  const fileDetails = await ctx.telegram.getFile(fileId);
+  const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${fileDetails.file_path}`;
+
+  // Download the file
+  const response = await axios.get(fileUrl, {
+    responseType: "stream",
+  });
+
+  // Send the downloaded file via email
+  const transporter = nodemailer.createTransport({
+    host: EMAIL_HOST,
+    port: 465,
+    secure: true,
+    auth: {
+      user: EMAIL_USERNAME,
+      pass: EMAIL_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: EMAIL_USERNAME,
+    to: "zlarin63@gmail.com", // Replace with recipient's email address
+    subject: "Document from Telegram",
+    text: `Telegram link: https://t.me/${ctx.session?.userName}(Für Antwort)`,
+    attachments: [
+      {
+        filename: document.file_name,
+        content: response.data,
+      },
+    ],
+  };
+
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+
+  await ctx.reply("Document sent via email.");
+});
 
 bot.on("message", async (ctx) => {
   // set a default value
