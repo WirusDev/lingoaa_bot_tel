@@ -1,9 +1,10 @@
 import { Context, session, Telegraf, Markup } from "telegraf";
 import axios, { Axios } from "axios";
-import { languageArray, sortetArray } from "./data/routers";
+import { languageArray } from "./data/routers";
 import { botMessages } from "./data/reply";
 import { log } from "console";
 import { get } from "http";
+import { button } from "telegraf/typings/markup";
 
 require("dotenv").config();
 
@@ -15,9 +16,6 @@ const getAnswer = (language: string, botMessages: any) => {
     case "🇺🇸 English":
       return botMessages.en;
       break;
-    case "🇩🇪 Deutsch":
-      return botMessages.de;
-      break;
     default:
       console.log("Language not found");
       return botMessages.none;
@@ -26,8 +24,12 @@ const getAnswer = (language: string, botMessages: any) => {
 };
 
 interface SessionData {
+  cahtId: number;
   messageCount: number;
   language: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
 
   // ... more session data go here
 }
@@ -48,11 +50,24 @@ bot.use(session());
 
 bot.hears("/status", async (ctx) => {
   if (ctx.session === undefined) {
-    ctx.reply(`You dint have status yet`);
+    ctx.reply(`You dint have status yet please press /start`, {
+      reply_markup: {
+        keyboard: [["/start"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
     return;
   }
+  //console.log(ctx.session);
+
+  const language = ctx.session.language;
   await ctx.reply(
-    `Messages: ${ctx.session.messageCount} Your Language: ${ctx.session.language}`
+    `${getAnswer(ctx.session.language, botMessages).language} ${
+      ctx.session.language
+    }\n${getAnswer(ctx.session.language, botMessages).messages} ${
+      ctx.session.messageCount
+    } `
   );
 });
 
@@ -73,14 +88,32 @@ bot.start(async (ctx) => {
       },
       []
     ),
-    { columns: 2 } // Указываем количество колонок в клавиатуре
+    { columns: 2 } // Указываем количество колонок в клавиатуреww
   );
-  ctx.session ??= { messageCount: 0, language: "not definte" };
+  ctx.session ??= {
+    messageCount: 0,
+    language: "not definte",
+    cahtId: 0,
+    userName: "",
+    firstName: "",
+    lastName: "",
+  };
 
   const chatId = ctx.chat?.id;
+
+  console.log(
+    `User Info - Chat ID: ${chatId}, Username: ${ctx.from?.username}, First Name: ${ctx.from?.first_name}, Last Name: ${ctx.from?.last_name}`
+  );
+
   if (chatId) {
     ctx.reply("Please Select your Language", keyboard);
   }
+
+  ctx.session.cahtId = chatId;
+  ctx.session.userName = ctx.from?.username ?? "";
+  ctx.session.firstName = ctx.from?.first_name ?? "";
+  ctx.session.lastName = ctx.from?.last_name ?? "";
+  console.log(ctx.session);
 });
 
 //Обработка ответов от пользователя
@@ -98,9 +131,7 @@ bot.start(async (ctx) => {
 //       ctx.session.language,
 //     {
 //       reply_markup: {
-//         keyboard: [["перевод", "устный перевод"]],
-//         resize_keyboard: true,
-//         one_time_keyboard: true,
+//         remove_keyboard: true,
 //       },
 //     }
 //   );
