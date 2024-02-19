@@ -1,55 +1,13 @@
-import { Context, session, Telegraf, Markup } from "telegraf";
-import axios, { Axios } from "axios";
+import { Markup } from "telegraf";
 import { languageArray } from "./data/routers";
 import { botMessages } from "./data/reply";
-import { log } from "console";
-import { get } from "http";
-import { button } from "telegraf/typings/markup";
-import nodemailer from "nodemailer";
-
-require("dotenv").config();
-
-const getAnswer = (language: string, botMessages: any) => {
-  switch (language) {
-    case "🇷🇺 Russisch":
-      return botMessages.ru;
-      break;
-    case "🇺🇸 English":
-      return botMessages.en;
-      break;
-    default:
-      console.log("Language not found");
-      return botMessages.none;
-      break;
-  }
-};
-
-interface SessionData {
-  chatId: number;
-  messageCount: number;
-  language: string;
-  userName: string;
-  firstName: string;
-  lastName: string;
-  anliegen: string;
-  languageFrom: string;
-  languageTo: string;
-  art: string;
-  // ... more session data go here
-}
-
-// Define your own context type
-interface MyContext extends Context {
-  session?: SessionData;
-}
-
-const { TELEGRAM_TOKEN, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_HOST } =
-  process.env;
-if (TELEGRAM_TOKEN === undefined) {
-  throw new TypeError("TELEGRAM_TOKEN must be provided!");
-}
-const bot = new Telegraf<MyContext>(TELEGRAM_TOKEN);
-bot.use(session());
+import { bot } from "./components/bot_and_session";
+import { handleDocUpload } from "./components/handleDocUpload";
+import {
+  handleUserResponse,
+  getAnswer,
+  handleCallbackQuerry,
+} from "./components/handleMessage";
 
 bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(
@@ -71,7 +29,6 @@ bot.start(async (ctx) => {
     { columns: 2 } // Указываем количество колонок в клавиатуреww
   );
   ctx.session ??= {
-    messageCount: 0,
     language: "not definte",
     chatId: 0,
     userName: "",
@@ -118,117 +75,19 @@ bot.hears("/status", async (ctx) => {
   await ctx.reply(
     `${getAnswer(ctx.session.language, botMessages).language} ${
       ctx.session.language
-    }\n${getAnswer(ctx.session.language, botMessages).messages} ${
-      ctx.session.messageCount
+    }\n
     } `
   );
 });
 
-// Handle document uploads
-bot.on("document", async (ctx) => {
-  if (ctx.session === undefined) {
-    ctx.reply(`Session is undefined, please press /start`, {
-      reply_markup: {
-        keyboard: [["/start"]],
-        resize_keyboard: true,
-        one_time_keyboard: true,
-      },
-    });
-    return;
-  }
-  const document = ctx.message.document;
-  const fileId = document.file_id;
+// Handle the callback query
+handleCallbackQuerry();
 
-  // Get the file path from Telegram
-  const fileDetails = await ctx.telegram.getFile(fileId);
-  const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${fileDetails.file_path}`;
+// Handle the document upload
+handleDocUpload();
 
-  // Download the file
-  const response = await axios.get(fileUrl, {
-    responseType: "stream",
-  });
-
-  // Send the downloaded file via email
-  const transporter = nodemailer.createTransport({
-    host: EMAIL_HOST,
-    port: 465,
-    secure: true,
-    auth: {
-      user: EMAIL_USERNAME,
-      pass: EMAIL_PASSWORD,
-    },
-  });
-
-  const mailOptions = {
-    from: EMAIL_USERNAME,
-    to: "zlarin63@gmail.com", // Replace with recipient's email address
-    subject: "Document from Telegram",
-    html: `
-    <h1>Nachricht vom Telegram BOT</h1>
-    <p>Telegram-Link: https://t.me/${ctx.session?.userName} (Für Antworten)</p>
-    <p>Anliegen: ${ctx.session?.anliegen}</p>
-    <p>Übersetzung von ${ctx.session?.languageFrom} nach ${ctx.session?.languageTo}</p>
-    
-    `,
-    attachments: [
-      {
-        filename: document.file_name,
-        content: response.data,
-      },
-    ],
-  };
-
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
-
-  await ctx.reply("Document sent via email.");
-});
-
-bot.on("message", async (ctx) => {
-  if (ctx.session === undefined) {
-    await ctx.reply(`You dint have status yet please press /start`, {
-      reply_markup: {
-        keyboard: [["/start"]],
-        resize_keyboard: true,
-        one_time_keyboard: true,
-      },
-    });
-    return;
-  }
-  ctx.session.messageCount++;
-  await ctx.reply(`Seen ${ctx.session.messageCount} messages.`);
-});
-
-// bot.help((ctx) => ctx.reply('Send me a message for assistance.'));
-bot.on("text", (ctx) => ctx.reply(`You said: ${ctx.message.text}`));
-
-// Handling callback queries here
-bot.action(/.*/, async (ctx) => {
-  // Assuming you want to set the selected language in the user's session and reply with a confirmation
-  const language = ctx.match[0]; // Getting the data from the callback query
-
-  if (ctx.session === undefined) {
-    ctx.reply(`You dint have status yet please press /start`, {
-      reply_markup: {
-        keyboard: [["/start"]],
-        resize_keyboard: true,
-        one_time_keyboard: true,
-      },
-    });
-    return;
-  }
-
-  ctx.session.language = language; // Storing the selected language in the session
-
-  await ctx.answerCbQuery(`Language set to ${language}.`); // Optionally notify the user about their choice
-
-  await ctx.reply(getAnswer(language, botMessages).welcomeMessage); // Reply to the user confirming their selection
-});
+// Handle user's response to uploading more documents
+handleUserResponse();
 
 bot.launch().then(() => {
   console.log("Bot is running!");
