@@ -25,13 +25,16 @@ const getAnswer = (language: string, botMessages: any) => {
 };
 
 interface SessionData {
-  cahtId: number;
+  chatId: number;
   messageCount: number;
   language: string;
   userName: string;
   firstName: string;
   lastName: string;
-
+  anliegen: string;
+  languageFrom: string;
+  languageTo: string;
+  art: string;
   // ... more session data go here
 }
 
@@ -47,31 +50,6 @@ if (TELEGRAM_TOKEN === undefined) {
 }
 const bot = new Telegraf<MyContext>(TELEGRAM_TOKEN);
 bot.use(session());
-
-//Add bot session - https://github.com/feathers-studio/telegraf-docs/blob/master/examples/session-bot.ts
-
-bot.hears("/status", async (ctx) => {
-  if (ctx.session === undefined) {
-    ctx.reply(`You dint have status yet please press /start`, {
-      reply_markup: {
-        keyboard: [["/start"]],
-        resize_keyboard: true,
-        one_time_keyboard: true,
-      },
-    });
-    return;
-  }
-  //console.log(ctx.session);
-
-  const language = ctx.session.language;
-  await ctx.reply(
-    `${getAnswer(ctx.session.language, botMessages).language} ${
-      ctx.session.language
-    }\n${getAnswer(ctx.session.language, botMessages).messages} ${
-      ctx.session.messageCount
-    } `
-  );
-});
 
 bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(
@@ -95,10 +73,14 @@ bot.start(async (ctx) => {
   ctx.session ??= {
     messageCount: 0,
     language: "not definte",
-    cahtId: 0,
+    chatId: 0,
     userName: "",
     firstName: "",
     lastName: "",
+    anliegen: "",
+    languageFrom: "",
+    languageTo: "",
+    art: "",
   };
 
   const chatId = ctx.chat?.id;
@@ -111,11 +93,35 @@ bot.start(async (ctx) => {
     ctx.reply("Please Select your Language", keyboard);
   }
 
-  ctx.session.cahtId = chatId;
+  ctx.session.chatId = chatId;
   ctx.session.userName = ctx.from?.username ?? "";
   ctx.session.firstName = ctx.from?.first_name ?? "";
   ctx.session.lastName = ctx.from?.last_name ?? "";
-  console.log(ctx.session);
+  //console.log(ctx.session); // Debugging
+});
+
+// Handle the /status command
+bot.hears("/status", async (ctx) => {
+  if (ctx.session === undefined) {
+    ctx.reply(`You dint have status yet please press /start`, {
+      reply_markup: {
+        keyboard: [["/start"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
+    return;
+  }
+  //console.log(ctx.session);
+
+  const language = ctx.session.language;
+  await ctx.reply(
+    `${getAnswer(ctx.session.language, botMessages).language} ${
+      ctx.session.language
+    }\n${getAnswer(ctx.session.language, botMessages).messages} ${
+      ctx.session.messageCount
+    } `
+  );
 });
 
 // Handle document uploads
@@ -157,7 +163,13 @@ bot.on("document", async (ctx) => {
     from: EMAIL_USERNAME,
     to: "zlarin63@gmail.com", // Replace with recipient's email address
     subject: "Document from Telegram",
-    text: `Telegram link: https://t.me/${ctx.session?.userName}(Für Antwort)`,
+    html: `
+    <h1>Nachricht vom Telegram BOT</h1>
+    <p>Telegram-Link: https://t.me/${ctx.session?.userName} (Für Antworten)</p>
+    <p>Anliegen: ${ctx.session?.anliegen}</p>
+    <p>Übersetzung von ${ctx.session?.languageFrom} nach ${ctx.session?.languageTo}</p>
+    
+    `,
     attachments: [
       {
         filename: document.file_name,
@@ -178,10 +190,14 @@ bot.on("document", async (ctx) => {
 });
 
 bot.on("message", async (ctx) => {
-  // set a default value
   if (ctx.session === undefined) {
-    await ctx.reply("Session is undefined");
-    console.log("Session is undefined");
+    await ctx.reply(`You dint have status yet please press /start`, {
+      reply_markup: {
+        keyboard: [["/start"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
     return;
   }
   ctx.session.messageCount++;
@@ -195,8 +211,15 @@ bot.on("text", (ctx) => ctx.reply(`You said: ${ctx.message.text}`));
 bot.action(/.*/, async (ctx) => {
   // Assuming you want to set the selected language in the user's session and reply with a confirmation
   const language = ctx.match[0]; // Getting the data from the callback query
+
   if (ctx.session === undefined) {
-    console.log("Session is undefined!");
+    ctx.reply(`You dint have status yet please press /start`, {
+      reply_markup: {
+        keyboard: [["/start"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
     return;
   }
 
