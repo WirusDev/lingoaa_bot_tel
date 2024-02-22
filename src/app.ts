@@ -1,6 +1,5 @@
 import { Markup } from "telegraf";
-import { languageArray } from "./data/routers";
-import { botMessages } from "./data/reply";
+//import { languageArray } from "./data/routers";
 import { bot } from "./components/bot_and_session";
 import { handleDocUpload } from "./components/handleDocUpload";
 import {
@@ -8,6 +7,7 @@ import {
   getAnswer,
   handleCallbackQuerry,
 } from "./components/handleMessage";
+import { languageArray } from "./data/reply";
 
 bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(
@@ -73,9 +73,7 @@ bot.hears("/status", async (ctx) => {
 
   const language = ctx.session.language;
   await ctx.reply(
-    `${getAnswer(ctx.session.language, botMessages).language} ${
-      ctx.session.language
-    }\n
+    `${getAnswer(ctx.session.language).language} ${ctx.session.language}\n
     `
   );
 });

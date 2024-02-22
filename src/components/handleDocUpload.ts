@@ -7,6 +7,7 @@ import {
   EMAIL_PASSWORD,
   EMAIL_HOST,
 } from "./bot_and_session";
+import { getAnswer } from "../components/handleMessage";
 
 // Store uploaded documents in an array
 let uploadedDocuments: any = [];
@@ -45,16 +46,13 @@ const handleDocUpload = async () => {
     });
 
     // Ask if the customer wants to upload more documents
-    ctx.reply(
-      "Document uploaded successfully. Do you want to upload more documents?",
-      {
-        reply_markup: {
-          keyboard: [["Yes", "No"]],
-          resize_keyboard: true,
-          one_time_keyboard: true,
-        },
-      }
-    );
+    ctx.reply(getAnswer(ctx.session?.language).documentsUploaded, {
+      reply_markup: {
+        keyboard: [["Yes", "No"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
   });
 };
 
