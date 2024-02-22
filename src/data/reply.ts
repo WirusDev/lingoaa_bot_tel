@@ -6,6 +6,7 @@ const botMessages = {
     welcomeMessage:
       "Good day! How can we assist you? Do you need translation or interpretation?",
     translationNeeded: "I need translation.",
+    interpretationNeeded: "I need interpretation.",
     translateTo: "Which language do you need the translation to?",
     fromGermanToEnglish: "From German to English.",
     certifiedNeeded: "Does the translation need to be certified?",
@@ -24,30 +25,12 @@ const botMessages = {
     language: "Your language: ",
     messages: "Messages: ",
   },
-  ru: {
-    greeting: "Пожалуйста, выберите ваш язык: Deutsch, English, Español...",
-    languageSelected: "Deutsch",
-    welcomeMessage:
-      "Добрый день! Чем мы можем вам помочь? Вам нужен перевод или устный перевод?",
-    translationNeeded: "Мне нужен перевод.",
-    translateTo: "На какой язык нужно перевести?",
-    fromGermanToEnglish: "С немецкого на английский.",
-    certifiedNeeded: "Должен ли перевод быть заверенным?",
-    certifiedYes: "Да, пожалуйста, заверенный перевод.",
-    uploadDocuments: "Пожалуйста, загрузите документы для перевода.",
-    documentsUploaded: "[Документы загружены]",
-    checkingDocuments:
-      "Спасибо, мы проверим ваши документы и свяжемся с вами в течение 30 минут.",
-    priceOffer:
-      "Ваше предложение по цене: срочная доставка - 200 евро, стандартная доставка - 150 евро. Пожалуйста, выберите.",
-    standardDeliveryChosen: "Я выбираю стандартную доставку.",
-    paymentInstructions:
-      "Спасибо за ваш выбор. Пожалуйста, переведите сумму в 150 евро на следующий банковский счет: [Банковские данные]",
-    orderConfirmation:
-      "Спасибо за оформление заказа. Пожалуйста, отправьте нам ваше имя и фамилию, а также ваш адрес для доставки.",
-    language: "Ваш язык: ",
-    messages: "Сообщения: ",
-  },
 };
 
+// const keyboard = Markup.inlineKeyboard([
+//   [
+//     Markup.button.callback("translationNeeded", "translationNeeded"),
+//     Markup.button.callback("interpretationNeeded", "interpretationNeeded"),
+//   ],
+// ]);
 export { botMessages };

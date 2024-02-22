@@ -28,4 +28,11 @@ if (TELEGRAM_TOKEN === undefined) {
 const bot = new Telegraf<MyContext>(TELEGRAM_TOKEN);
 bot.use(session());
 
-export { bot, TELEGRAM_TOKEN, EMAIL_USERNAME, EMAIL_PASSWORD, EMAIL_HOST };
+export {
+  bot,
+  TELEGRAM_TOKEN,
+  EMAIL_USERNAME,
+  EMAIL_PASSWORD,
+  EMAIL_HOST,
+  Markup,
+};

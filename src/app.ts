@@ -42,9 +42,9 @@ bot.start(async (ctx) => {
 
   const chatId = ctx.chat?.id;
 
-  console.log(
-    `User Info - Chat ID: ${chatId}, Username: ${ctx.from?.username}, First Name: ${ctx.from?.first_name}, Last Name: ${ctx.from?.last_name}`
-  );
+  // console.log(
+  //   `User Info - Chat ID: ${chatId}, Username: ${ctx.from?.username}, First Name: ${ctx.from?.first_name}, Last Name: ${ctx.from?.last_name}`
+  // );
 
   if (chatId) {
     ctx.reply("Please Select your Language", keyboard);
@@ -76,7 +76,7 @@ bot.hears("/status", async (ctx) => {
     `${getAnswer(ctx.session.language, botMessages).language} ${
       ctx.session.language
     }\n
-    } `
+    `
   );
 });
 

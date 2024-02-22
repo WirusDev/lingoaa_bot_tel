@@ -1,3 +1,3 @@
-const languageArray = ["🇺🇸 English", "🇷🇺 Russisch"];
+const languageArray = ["🇺🇸 English"];
 
 export { languageArray };
