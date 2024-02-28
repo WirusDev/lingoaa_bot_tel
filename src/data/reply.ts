@@ -77,7 +77,7 @@ const botMessages = {
   },
 };
 
-const languageArray = ["🇺🇸 English", "🇺🇸 Russian"];
+const languageArray = ["🇺🇸 English", "🇷🇺 Russian"];
 
 const getAnswer = (language: string) => {
   const data = botMessages;
@@ -85,7 +85,7 @@ const getAnswer = (language: string) => {
     case "🇺🇸 English":
       return data.en;
       break;
-    case "🇺🇸 Russian":
+    case "🇷🇺 Russian":
       return data.ru;
       break;
     default:

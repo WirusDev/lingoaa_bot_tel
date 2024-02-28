@@ -15,22 +15,6 @@ const handleUserResponse = async () => {
         },
       });
       return;
-    }
-
-    const anliegen = ctx.session.anliegen;
-    const userResponse = ctx.message.text;
-    // Check if the user's response is to upload documents and if the user has uploaded documents
-    if (anliegen === "interpretationNeeded") {
-      if (userResponse === "Yes") {
-        // If the user wants to upload more, continue the conversation
-        ctx.reply("Please upload the next document.");
-      } else if (userResponse === "No") {
-        // If the user doesn't want to upload more, send the collected documents via email
-        sendDocumentsViaEmail(ctx);
-      } else {
-        // If the user's response is neither "Yes" nor "No", ask them to choose from the provided options
-        ctx.reply("Please choose from the provided options.");
-      }
     } else {
       ctx.reply(getAnswer(ctx.session?.language).selectFromOptions);
     }
@@ -49,9 +33,10 @@ const handleCallbackQuerry = async () => {
       });
       return;
     }
+    var anliegen = ctx.session?.anliegen;
+    const userCallBack = ctx.match[0];
 
-    const userCallBack = ctx.match[0]; // Getting the data from the callback query
-    // Check if the user's response is a language
+    // Getting the data from the callback query
     if (languageArray.includes(userCallBack)) {
       ctx.session.language = userCallBack; // Storing the selected language in the session
       await ctx.answerCbQuery(`Language set to ${userCallBack}.`); // Optionally notify the user about their choice
@@ -72,6 +57,17 @@ const handleCallbackQuerry = async () => {
       ); // Reply to the user confirming their selection
       return;
     }
+
+    switch (userCallBack) {
+      case "translationNeeded":
+        break;
+
+      default:
+        break;
+    }
+
+    // Check if the user's response is a language
+
     if (userCallBack === "translationNeeded") {
       ctx.session.anliegen = "translationNeeded";
       await ctx.reply(
@@ -102,13 +98,28 @@ const handleCallbackQuerry = async () => {
       return;
     }
     if (userCallBack === "interpretationNeeded") {
-      ctx.session.anliegen = "interpretationNeeded";
+      anliegen = "interpretationNeeded";
       ctx.reply(getAnswer(ctx.session?.language).interpretationNeededYes);
       return;
-    } else {
-      ctx.reply(getAnswer(ctx.session?.language).selectFromOptions);
     }
+
+    //   if (userCallBack === "interpretationNeeded") {
+    //     //const userResponse = ctx.message?.text; // Declare the userResponse variable
+    //     if (userCallBack === "Yes") {
+    //       // If the user wants to upload more, continue the conversation
+    //       ctx.reply("Please upload the next document.");
+    //       return;
+    //     } if (userCallBack === "No") {
+    //       // If the user doesn't want to upload more, send the collected documents via email
+    //       sendDocumentsViaEmail(ctx);
+    //       return;
+    //     }
+    //   } else {
+    //     ctx.reply(getAnswer(ctx.session?.language).selectFromOptions);
+    //   }
+    // }
   });
 };
+// Check if the user's response is to upload documents and if the user has uploaded documents
 
 export { handleUserResponse, getAnswer, handleCallbackQuerry };
