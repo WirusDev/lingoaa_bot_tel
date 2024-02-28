@@ -6,8 +6,10 @@ import {
   EMAIL_USERNAME,
   EMAIL_PASSWORD,
   EMAIL_HOST,
+  Markup,
 } from "./bot_and_session";
-import { getAnswer } from "../components/handleMessage";
+import { getAnswer } from "../data/reply";
+import { get } from "http";
 
 // Store uploaded documents in an array
 let uploadedDocuments: any = [];
@@ -23,6 +25,25 @@ const handleDocUpload = async () => {
           one_time_keyboard: true,
         },
       });
+      return;
+    }
+
+    if (ctx.session?.anliegen !== "interpretationNeeded") {
+      ctx.reply(
+        getAnswer(ctx.session?.language).selectFromOptions,
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback(
+              getAnswer(ctx.session?.language).translationNeeded,
+              "translationNeeded"
+            ),
+            Markup.button.callback(
+              getAnswer(ctx.session?.language).interpretationNeeded,
+              "interpretationNeeded"
+            ),
+          ],
+        ])
+      );
       return;
     }
 
@@ -46,13 +67,21 @@ const handleDocUpload = async () => {
     });
 
     // Ask if the customer wants to upload more documents
-    ctx.reply(getAnswer(ctx.session?.language).documentsUploaded, {
-      reply_markup: {
-        keyboard: [["Yes", "No"]],
-        resize_keyboard: true,
-        one_time_keyboard: true,
-      },
-    });
+    ctx.reply(
+      getAnswer(ctx.session?.language).documentsUploaded,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            getAnswer(ctx.session?.language).yes,
+            "yesUploadMoreDocs"
+          ),
+          Markup.button.callback(
+            getAnswer(ctx.session?.language).no,
+            "noUploadMoreDocs"
+          ),
+        ],
+      ])
+    );
   });
 };
 
@@ -96,7 +125,7 @@ const sendDocumentsViaEmail = async (ctx: any) => {
   uploadedDocuments = [];
 
   // Inform the user that the documents have been sent via email
-  ctx.reply("Documents sent via email.");
+  ctx.reply(getAnswer(ctx.session?.language).documentSentViaEmail);
 };
 
 export { handleDocUpload, sendDocumentsViaEmail };

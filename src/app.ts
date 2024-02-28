@@ -4,10 +4,9 @@ import { bot } from "./components/bot_and_session";
 import { handleDocUpload } from "./components/handleDocUpload";
 import {
   handleUserResponse,
-  getAnswer,
   handleCallbackQuerry,
 } from "./components/handleMessage";
-import { languageArray } from "./data/reply";
+import { languageArray, getAnswer } from "./data/reply";
 
 bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(

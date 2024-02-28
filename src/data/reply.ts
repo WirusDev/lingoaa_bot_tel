@@ -15,6 +15,8 @@ const botMessages = {
     interpretationNeededYes: "Please send us your Documents.",
     selectFromOptions:
       "Please choose from the provided options.(From bot Relply)",
+    yes: "Yes",
+    no: "No",
     SessionUndefined: "Session is  undefined, please press /start",
     startOver: "Please press /start to start over.",
     translateFrom: "Which language do you need the translation from?",
@@ -35,6 +37,8 @@ const botMessages = {
       "Thank you for placing your order. Please send us your full name and address for delivery.",
     language: "Your language: ",
     messages: "Messages: ",
+    documentSentViaEmail: "Documents sent via email.",
+    uploadNextDocument: "Please upload the next document.",
     error: "Please select your language! Press on /start ",
   },
   ru: {
@@ -48,6 +52,8 @@ const botMessages = {
     callUsYes:
       "Нажмите кнопку, чтобы позвонить нам. Или наберите номер: +49 30 2359 666 80",
     fillOutForm: "Я хочу заполнить форму.",
+    yes: "Да",
+    no: "Нет",
     fillOutFormYes: "Нажмите кнопку, чтобы заполнить форму.",
     interpretationNeeded: "Мне нужна интерпретация.",
     interpretationNeededYes: "Пожалуйста, отправьте нам ваши документы.",
@@ -73,6 +79,8 @@ const botMessages = {
       "Спасибо за размещение заказа. Пожалуйста, отправьте нам ваше полное имя и адрес для доставки.",
     language: "Ваш язык: ",
     messages: "Сообщения: ",
+    documentSentViaEmail: "Документы отправлены по электронной почте.",
+    uploadNextDocument: "Пожалуйста, загрузите следующий документ.",
     error: "Пожалуйста, выберите ваш язык! Нажмите на /start ",
   },
 };
