@@ -14,11 +14,11 @@ bot.start(async (ctx) => {
       (accumulator: any[], currentValue: string, index: number) => {
         if (index % 2 === 0) {
           accumulator.push([
-            Markup.button.callback(currentValue, currentValue),
+            Markup.button.callback(currentValue, `${currentValue}:chatLang`),
           ]);
         } else {
           accumulator[accumulator.length - 1].push(
-            Markup.button.callback(currentValue, currentValue)
+            Markup.button.callback(currentValue, `${currentValue}:chatLang`)
           );
         }
         return accumulator;
@@ -27,6 +27,7 @@ bot.start(async (ctx) => {
     ),
     { columns: 2 } // Указываем количество колонок в клавиатуреww
   );
+
   ctx.session ??= {
     language: "not definte",
     chatId: 0,

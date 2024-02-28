@@ -33,27 +33,58 @@ const handleCallbackQuerry = async () => {
       return;
     }
 
+    const useLater = Markup.inlineKeyboard([
+      [
+        Markup.button.callback(
+          getAnswer(ctx.session?.language).translationNeeded,
+          "translationNeeded"
+        ),
+        Markup.button.callback(
+          getAnswer(ctx.session?.language).interpretationNeeded,
+          "interpretationNeeded"
+        ),
+      ],
+    ]);
+
+    const interpritationLanguageKeyboard = Markup.inlineKeyboard(
+      getAnswer(ctx.session?.language).LanguageArray.reduce(
+        (accumulator: any[], currentValue: string, index: number) => {
+          if (index % 2 === 0) {
+            accumulator.push([
+              Markup.button.callback(currentValue, `${currentValue}:fromLang`),
+            ]);
+          } else {
+            accumulator[accumulator.length - 1].push(
+              Markup.button.callback(currentValue, `${currentValue}:fromLang`)
+            );
+          }
+          return accumulator;
+        },
+        []
+      ),
+      { columns: 2 } // Указываем количество колонок в клавиатуреww
+    );
+
     const userCallBack = ctx.match[0];
 
     // Getting the data from the callback query
-    if (languageArray.includes(userCallBack)) {
-      ctx.session.language = userCallBack; // Storing the selected language in the session
-      await ctx.reply(
-        getAnswer(userCallBack).welcomeMessage,
-        Markup.inlineKeyboard([
-          [
-            Markup.button.callback(
-              getAnswer(ctx.session?.language).translationNeeded,
-              "translationNeeded"
-            ),
-            Markup.button.callback(
-              getAnswer(ctx.session?.language).interpretationNeeded,
-              "interpretationNeeded"
-            ),
-          ],
-        ])
-      ); // Reply to the user confirming their selection
-      return;
+    const [language, aditionalOption] = userCallBack
+      .split(":")
+      .map((part) => part.trim());
+    //console.log("Language selected: ", language);
+
+    if (aditionalOption === "chatLang") {
+      if (languageArray.includes(language)) {
+        ctx.session.language = language; // Storing the selected language in the session
+        console.log("Language selected:", ctx.session.language);
+
+        await ctx.reply(
+          getAnswer(language).translateFrom,
+          interpritationLanguageKeyboard
+        ); // Reply to the user confirming their selection
+        console.log(ctx.session?.language);
+        return;
+      }
     }
 
     switch (userCallBack) {

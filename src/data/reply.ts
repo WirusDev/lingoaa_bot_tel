@@ -40,6 +40,19 @@ const botMessages = {
     documentSentViaEmail: "Documents sent via email.",
     uploadNextDocument: "Please upload the next document.",
     error: "Please select your language! Press on /start ",
+    LanguageArray: [
+      "🇩🇪 German",
+      "🇬🇧 English",
+      "🇺🇦 Ukrainian",
+      "🇷🇺 Russian",
+      "🇹🇷 Turkish",
+      "🇸🇦 Arabic",
+      "🇮🇷 Persian",
+      "🇫🇷 French",
+      "🇪🇸 Spanish",
+      "🇷🇴 Romanian",
+      "🇮🇹 Italian",
+    ],
   },
   ru: {
     greeting: "Пожалуйста, выберите ваш язык: Deutsch, English, Español...",
@@ -82,6 +95,19 @@ const botMessages = {
     documentSentViaEmail: "Документы отправлены по электронной почте.",
     uploadNextDocument: "Пожалуйста, загрузите следующий документ.",
     error: "Пожалуйста, выберите ваш язык! Нажмите на /start ",
+    LanguageArray: [
+      "🇩🇪 Немецкий",
+      "🇬🇧 Английский",
+      "🇺🇦 Украинский",
+      "🇷🇺 Русский",
+      "🇹🇷 Турецкий",
+      "🇸🇦 Арабский",
+      "🇮🇷 Персидский",
+      "🇫🇷 Французский",
+      "🇪🇸 Испанский",
+      "🇷🇴 Румынский",
+      "🇮🇹 Итальянский",
+    ],
   },
 };
 
@@ -97,7 +123,7 @@ const getAnswer = (language: string) => {
       return data.ru;
       break;
     default:
-      console.log("Language not found");
+      console.log("Language not found: " + language);
       return data.en;
       break;
   }
