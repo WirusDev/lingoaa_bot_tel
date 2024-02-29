@@ -74,6 +74,8 @@ bot.hears("/status", async (ctx) => {
   const language = ctx.session.language;
   await ctx.reply(
     `${getAnswer(ctx.session.language).language} ${ctx.session.language}\n
+      Lang from: ${ctx.session.languageFrom}\n
+      Lang to: ${ctx.session.languageTo}\n
     `
   );
 });
