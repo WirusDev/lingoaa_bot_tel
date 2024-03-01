@@ -656,41 +656,30 @@ const getAnswer = (language: string) => {
   }
 };
 
-const interpritationLanguageKeyboard = (lang: string) => {
-  const indexOfLang = getAnswer(lang).LanguageArray.indexOf(lang);
-  console.log("indexOfLang", indexOfLang);
-
+const interpritationLanguageKeyboard = (
+  lang: string,
+  aditionalOption: string
+) => {
   return Markup.inlineKeyboard(
     getAnswer(lang).LanguageArray.reduce(
       (accumulator: any[], currentValue: string, index: number) => {
         if (index % 2 === 0) {
           accumulator.push([
-            Markup.button.callback(currentValue, `${currentValue}:fromLang`),
+            Markup.button.callback(
+              currentValue,
+              `${
+                getAnswer("🇬🇧 English").LanguageArray[index]
+              }:${aditionalOption}`
+            ),
           ]);
         } else {
           accumulator[accumulator.length - 1].push(
-            Markup.button.callback(currentValue, `${currentValue}:fromLang`)
-          );
-        }
-        return accumulator;
-      },
-      []
-    ),
-    { columns: 2 } // Указываем количество колонок в клавиатуреww
-  );
-};
-
-const interpritationLanguageKeyboardTo = (lang: string) => {
-  return Markup.inlineKeyboard(
-    getAnswer(lang).LanguageArray.reduce(
-      (accumulator: any[], currentValue: string, index: number) => {
-        if (index % 2 === 0) {
-          accumulator.push([
-            Markup.button.callback(currentValue, `${currentValue}:toLang`),
-          ]);
-        } else {
-          accumulator[accumulator.length - 1].push(
-            Markup.button.callback(currentValue, `${currentValue}:toLang`)
+            Markup.button.callback(
+              currentValue,
+              `${
+                getAnswer("🇬🇧 English").LanguageArray[index]
+              }:${aditionalOption}`
+            )
           );
         }
         return accumulator;
@@ -706,5 +695,4 @@ export {
   getAnswer,
   languageArray,
   interpritationLanguageKeyboard,
-  interpritationLanguageKeyboardTo,
 };

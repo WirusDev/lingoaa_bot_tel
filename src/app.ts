@@ -8,7 +8,7 @@ import {
 } from "./components/handleMessage";
 import { languageArray, getAnswer } from "./data/reply";
 
-bot.start(async (ctx) => {
+const startOver = bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(
     languageArray.reduce(
       (accumulator: any[], currentValue: string, index: number) => {
@@ -42,10 +42,6 @@ bot.start(async (ctx) => {
 
   const chatId = ctx.chat?.id;
 
-  // console.log(
-  //   `User Info - Chat ID: ${chatId}, Username: ${ctx.from?.username}, First Name: ${ctx.from?.first_name}, Last Name: ${ctx.from?.last_name}`
-  // );
-
   if (chatId) {
     ctx.reply("Please Select your Language", keyboard);
   }
@@ -56,7 +52,7 @@ bot.start(async (ctx) => {
   ctx.session.lastName = ctx.from?.last_name ?? "";
   //console.log(ctx.session); // Debugging
 });
-
+//startOver;
 // Handle the /status command
 bot.hears("/status", async (ctx) => {
   if (ctx.session === undefined) {
@@ -92,3 +88,5 @@ handleUserResponse();
 bot.launch().then(() => {
   console.log("Bot is running!");
 });
+
+export { startOver };
