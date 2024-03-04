@@ -690,9 +690,14 @@ const interpritationLanguageKeyboard = (
   );
 };
 
+const startOver = () => {
+  return Markup.button.callback("Start over", "startOver");
+};
+
 export {
   botMessages,
   getAnswer,
   languageArray,
   interpritationLanguageKeyboard,
+  startOver,
 };

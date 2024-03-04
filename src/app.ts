@@ -8,7 +8,7 @@ import {
 } from "./components/handleMessage";
 import { languageArray, getAnswer } from "./data/reply";
 
-const startOver = bot.start(async (ctx) => {
+bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(
     languageArray.reduce(
       (accumulator: any[], currentValue: string, index: number) => {
@@ -88,5 +88,3 @@ handleUserResponse();
 bot.launch().then(() => {
   console.log("Bot is running!");
 });
-
-export { startOver };

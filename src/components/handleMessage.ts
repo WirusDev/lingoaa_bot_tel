@@ -1,7 +1,10 @@
 import { bot, Markup } from "./bot_and_session";
-import { startOver } from "../app";
 import { sendDocumentsViaEmail } from "./handleDocUpload";
-import { getAnswer, interpritationLanguageKeyboard } from "../data/reply";
+import {
+  getAnswer,
+  interpritationLanguageKeyboard,
+  startOver,
+} from "../data/reply";
 
 // Handle user's response to uploading more documents
 const handleUserResponse = async () => {
@@ -42,9 +45,9 @@ const handleCallbackQuerry = async () => {
     var aditionalOption =
       splitCallback.length > 1 ? splitCallback[1].trim() : "else";
 
-    console.log("Aditional Option:", aditionalOption);
+    //console.log("Aditional Option:", aditionalOption);
 
-    await ctx.answerCbQuery(`You selected ${languageCallback}`);
+    //await ctx.answerCbQuery(`You selected ${languageCallback}`);
 
     switch (aditionalOption) {
       case "chatLang":
@@ -53,7 +56,7 @@ const handleCallbackQuerry = async () => {
 
         await ctx.reply(
           getAnswer(languageCallback).translateFrom,
-          interpritationLanguageKeyboard(languageCallback, "fromLang")
+          interpritationLanguageKeyboard(languageCallback, "fromLang") // Show keyboard with languages to select from
         ); // Reply to the user confirming their selection
         //console.log(ctx.session?.language);
         aditionalOption = "";
@@ -65,14 +68,60 @@ const handleCallbackQuerry = async () => {
         console.log("LanguageFrom selected:", ctx.session.languageFrom);
         ctx.reply(
           getAnswer(ctx.session?.language).translateTo,
-          interpritationLanguageKeyboard(ctx.session?.language, "toLang")
+          interpritationLanguageKeyboard(ctx.session?.language, "toLang") // Show keyboard with languages to select to
         );
         aditionalOption = "";
         break;
 
+      // If the user selects the language from "toLang" keyboard
       case "toLang":
         ctx.session.languageTo = languageCallback;
         console.log("LanguageTo selected:", ctx.session.languageTo);
+        ctx.reply(
+          "Is that correct? " +
+            ctx.session?.languageFrom +
+            "->" +
+            ctx.session?.languageTo,
+          Markup.inlineKeyboard([
+            Markup.button.callback("Yes", "yesIsThatCorrect:isThatCorrect"),
+            Markup.button.callback("No", ":editLang"),
+          ])
+        );
+        // ctx.reply(
+        //   getAnswer(ctx.session?.language).welcomeMessage,
+        //   Markup.inlineKeyboard([
+        //     Markup.button.callback(
+        //       getAnswer(ctx.session?.language).translationNeeded,
+        //       "translationNeeded"
+        //     ),
+        //     Markup.button.callback(
+        //       getAnswer(ctx.session?.language).interpretationNeeded,
+        //       "interpretationNeeded"
+        //     ),
+        //   ])
+        // );
+        aditionalOption = "";
+        break;
+
+      case "editLang":
+        ctx.reply(
+          getAnswer(ctx.session?.language).translateFrom,
+          interpritationLanguageKeyboard(ctx.session?.language, "fromLang") // Show keyboard with languages to select to
+        );
+        aditionalOption = "";
+        break;
+
+      case "isThatCorrect":
+        // ctx.reply(
+        //   "Is that correct? " +
+        //     ctx.session?.languageFrom +
+        //     "->" +
+        //     ctx.session?.languageTo,
+        //   Markup.inlineKeyboard([
+        //     Markup.button.callback("Yes", "yesIsThatCorrect"),
+        //     Markup.button.callback("No", "noIsThatCorrect"),
+        //   ])
+        // );
         ctx.reply(
           getAnswer(ctx.session?.language).welcomeMessage,
           Markup.inlineKeyboard([
@@ -132,6 +181,7 @@ const handleCallbackQuerry = async () => {
                   "Fill out the form!",
                   "https://lingoaa.com/dolmetscher-anfragen/"
                 ),
+                startOver(),
               ])
             );
             break;
@@ -146,7 +196,13 @@ const handleCallbackQuerry = async () => {
             break;
 
           case "startOver":
-            //startOver();
+            ctx.reply(`To start over please press /start`, {
+              reply_markup: {
+                keyboard: [["/start"]],
+                resize_keyboard: true,
+                one_time_keyboard: true,
+              },
+            });
             break;
           default:
             ctx.reply(
