@@ -161,7 +161,9 @@ const handleCallbackQuerry = async () => {
 
           case "interpretationNeeded":
             ctx.session.anliegen = "interpretationNeeded";
-            ctx.reply(getAnswer(ctx.session?.language).interpretationNeededYes);
+            ctx.session.doWeNeedEmaul = true;
+            //ctx.reply(getAnswer(ctx.session?.language).interpretationNeededYes);
+            ctx.reply("Please send us your E-Mail address");
             break;
 
           case "callUs":
@@ -193,6 +195,7 @@ const handleCallbackQuerry = async () => {
 
           case "noUploadMoreDocs":
             sendDocumentsViaEmail(ctx);
+
             break;
 
           case "startOver":

@@ -12,6 +12,8 @@ interface SessionData {
   languageFrom: string;
   languageTo: string;
   art: string;
+  eMail: string;
+  doWeNeedEmaul: boolean;
   // ... more session data go here
 }
 

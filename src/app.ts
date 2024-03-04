@@ -38,6 +38,8 @@ bot.start(async (ctx) => {
     languageFrom: "",
     languageTo: "",
     art: "",
+    eMail: "",
+    doWeNeedEmaul: false,
   };
 
   const chatId = ctx.chat?.id;
@@ -74,6 +76,36 @@ bot.hears("/status", async (ctx) => {
       Lang to: ${ctx.session.languageTo}\n
     `
   );
+});
+
+bot.on("text", async (ctx) => {
+  if (ctx.session === undefined) {
+    ctx.reply(`You dint have status yet please press /start`, {
+      reply_markup: {
+        keyboard: [["/start"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
+    return;
+  }
+
+  if (
+    ctx.session?.anliegen === "interpretationNeeded" &&
+    ctx.session?.doWeNeedEmaul === true
+  ) {
+    ctx.session.eMail = ctx.message.text;
+    ctx.reply(
+      "E-Mail saved successfully " +
+        getAnswer(ctx.session?.language).interpretationNeededYes
+      // Markup.inlineKeyboard([
+      //   [Markup.button.callback("Continue", "translateFrom")],
+      // ])
+    );
+    ctx.session.doWeNeedEmaul = false;
+  } else {
+    ctx.reply(getAnswer(ctx.session.language).selectFromOptions);
+  }
 });
 
 // Handle the callback query

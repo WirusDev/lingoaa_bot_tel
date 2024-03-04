@@ -8,8 +8,7 @@ import {
   EMAIL_HOST,
   Markup,
 } from "./bot_and_session";
-import { getAnswer } from "../data/reply";
-import { get } from "http";
+import { getAnswer, startOver } from "../data/reply";
 
 // Store uploaded documents in an array
 let uploadedDocuments: any = [];
@@ -83,6 +82,74 @@ const handleDocUpload = async () => {
       ])
     );
   });
+
+  bot.on("photo", async (ctx) => {
+    if (ctx.session === undefined) {
+      ctx.reply(`Session is  undefined, please press /start`, {
+        reply_markup: {
+          keyboard: [["/start"]],
+          resize_keyboard: true,
+          one_time_keyboard: true,
+        },
+      });
+      return;
+    }
+
+    if (ctx.session?.anliegen !== "interpretationNeeded") {
+      ctx.reply(
+        getAnswer(ctx.session?.language).selectFromOptions,
+        Markup.inlineKeyboard([
+          [
+            Markup.button.callback(
+              getAnswer(ctx.session?.language).translationNeeded,
+              "translationNeeded"
+            ),
+            Markup.button.callback(
+              getAnswer(ctx.session?.language).interpretationNeeded,
+              "interpretationNeeded"
+            ),
+          ],
+        ])
+      );
+      return;
+    }
+
+    // Get the photo uploaded by the user
+    const photo = ctx.message.photo;
+    const fileId = photo[photo.length - 1].file_id;
+
+    // Get the file path from Telegram
+    const fileDetails = await ctx.telegram.getFile(fileId);
+    const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${fileDetails.file_path}`;
+
+    // Download the file
+    const response = await axios.get(fileUrl, {
+      responseType: "stream",
+    });
+
+    // Push the document into the array
+    uploadedDocuments.push({
+      filename: `${fileId}.jpg`,
+      content: response.data,
+    });
+
+    // Ask if the customer wants to upload more documents
+    ctx.reply(
+      getAnswer(ctx.session?.language).documentsUploaded,
+      Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            getAnswer(ctx.session?.language).yes,
+            "yesUploadMoreDocs"
+          ),
+          Markup.button.callback(
+            getAnswer(ctx.session?.language).no,
+            "noUploadMoreDocs"
+          ),
+        ],
+      ])
+    );
+  });
 };
 
 // Function to send the collected documents via email
@@ -125,7 +192,10 @@ const sendDocumentsViaEmail = async (ctx: any) => {
   uploadedDocuments = [];
 
   // Inform the user that the documents have been sent via email
-  ctx.reply(getAnswer(ctx.session?.language).documentSentViaEmail);
+  ctx.reply(
+    getAnswer(ctx.session?.language).documentSentViaEmail,
+    Markup.inlineKeyboard([startOver()])
+  );
 };
 
 export { handleDocUpload, sendDocumentsViaEmail };
