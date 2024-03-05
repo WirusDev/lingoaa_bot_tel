@@ -7,6 +7,7 @@ import {
   handleCallbackQuerry,
 } from "./components/handleMessage";
 import { languageArray, getAnswer } from "./data/reply";
+import { get } from "http";
 
 bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(
@@ -96,13 +97,20 @@ bot.on("text", async (ctx) => {
     ctx.session.eMail = ctx.message.text;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(ctx.session.eMail)) {
-      ctx.reply("Please enter a valid email address.");
+      ctx.reply(getAnswer(ctx.session?.language).eMailnotValid);
       return;
     }
     await ctx.reply(
-      ` E-Mail saved successfully\n\nE-Mail: ${ctx.session.eMail}`,
+      ` ${getAnswer(ctx.session?.language).emailSaved}\n\nE-Mail: ${
+        ctx.session.eMail
+      }`,
       Markup.inlineKeyboard([
-        [Markup.button.callback("Edit my Email", "interpretationNeeded")],
+        [
+          Markup.button.callback(
+            getAnswer(ctx.session?.language).editEmail,
+            "interpretationNeeded"
+          ),
+        ],
       ])
     );
     ctx.reply(getAnswer(ctx.session?.language).interpretationNeededYes);
@@ -133,7 +141,7 @@ bot.use((ctx) => {
     });
     return;
   }
-  ctx.reply("Please select the provided options.");
+  ctx.reply(getAnswer(ctx.session?.language).selectFromOptions);
 });
 
 bot.launch().then(() => {

@@ -172,15 +172,11 @@ const sendDocumentsViaEmail = async (ctx: any) => {
     subject: "Documents from Telegram",
     html: `
       <h1>Nachricht vom Telegram BOT</h1>
-      <p>Telegram-Link: https://t.me/${
-        ctx.session?.userName
-      } (Für Antworten)</p>
-      <p>E-Mail: ${ctx.session?.eMail ? "" : "E-Mail is not providet"}</p>
+      <p>Telegram-Link: https://t.me/${ctx.session?.userName} (Für Antworten)</p>
+      <p>E-Mail: ${ctx.session?.eMail}</p>
       <p>Anliegen: ${ctx.session?.anliegen}</p>
       <p>${ctx.session?.art}</p>
-      <p>Übersetzung von ${ctx.session?.languageFrom} nach ${
-      ctx.session?.languageTo
-    }</p>
+      <p>Übersetzung von ${ctx.session?.languageFrom} auf ${ctx.session?.languageTo}</p>
     `,
     attachments: uploadedDocuments,
   };
@@ -199,8 +195,8 @@ const sendDocumentsViaEmail = async (ctx: any) => {
 
   // Inform the user that the documents have been sent via email
   ctx.reply(
-    getAnswer(ctx.session?.language).documentSentViaEmail,
-    Markup.inlineKeyboard([startOver()])
+    getAnswer(ctx.session?.language).checkingDocuments,
+    Markup.inlineKeyboard([startOver(ctx.session?.language)])
   );
 };
 

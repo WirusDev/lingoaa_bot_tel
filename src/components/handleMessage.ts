@@ -6,6 +6,7 @@ import {
   startOver,
 } from "../data/reply";
 import { log } from "console";
+import { get } from "http";
 
 // Handle user's response to uploading more documents
 const handleUserResponse = async () => {
@@ -38,7 +39,7 @@ const handleCallbackQuerry = async () => {
       });
       return;
     }
-    var userCallBack = ctx.match[0];
+    const userCallBack = ctx.match[0];
 
     // Getting the data from the callback query and splitting it
     const splitCallback = userCallBack.split(":");
@@ -55,11 +56,28 @@ const handleCallbackQuerry = async () => {
         ctx.session.language = languageCallback; // Storing the selected language in the session
         console.log("Language selected:", ctx.session.language);
 
-        await ctx.reply(
-          getAnswer(languageCallback).translateFrom,
-          interpritationLanguageKeyboard(languageCallback, "fromLang") // Show keyboard with languages to select from
+        // await ctx.reply(
+        //   getAnswer(languageCallback).translateFrom,
+        //   interpritationLanguageKeyboard(languageCallback, "fromLang") // Show keyboard with languages to select from
+        // );
+
+        ctx.reply(
+          getAnswer(ctx.session?.language).welcomeMessage,
+          Markup.inlineKeyboard([
+            [
+              Markup.button.callback(
+                getAnswer(ctx.session?.language).translationNeeded,
+                "translationNeeded"
+              ),
+            ],
+            [
+              Markup.button.callback(
+                getAnswer(ctx.session?.language).interpretationNeeded,
+                "interpretationNeeded"
+              ),
+            ],
+          ])
         ); // Reply to the user confirming their selection
-        //console.log(ctx.session?.language);
         aditionalOption = "";
 
         break;
@@ -79,28 +97,23 @@ const handleCallbackQuerry = async () => {
         ctx.session.languageTo = languageCallback;
         console.log("LanguageTo selected:", ctx.session.languageTo);
         ctx.reply(
-          "Is that correct? " +
-            ctx.session?.languageFrom +
-            "->" +
-            ctx.session?.languageTo,
+          ` ${getAnswer(ctx.session.language).correctQuestion}\n ${
+            ctx.session.languageFrom
+          } -> ${ctx.session.languageTo}
+        `,
+
           Markup.inlineKeyboard([
-            Markup.button.callback("Yes", "yesIsThatCorrect:isThatCorrect"),
-            Markup.button.callback("No", ":editLang"),
+            Markup.button.callback(
+              getAnswer(ctx.session?.language).yes,
+              "yesIsThatCorrect:isThatCorrect"
+            ),
+            Markup.button.callback(
+              getAnswer(ctx.session?.language).no,
+              ":editLang"
+            ),
           ])
         );
-        // ctx.reply(
-        //   getAnswer(ctx.session?.language).welcomeMessage,
-        //   Markup.inlineKeyboard([
-        //     Markup.button.callback(
-        //       getAnswer(ctx.session?.language).translationNeeded,
-        //       "translationNeeded"
-        //     ),
-        //     Markup.button.callback(
-        //       getAnswer(ctx.session?.language).interpretationNeeded,
-        //       "interpretationNeeded"
-        //     ),
-        //   ])
-        // );
+
         aditionalOption = "";
         break;
 
@@ -110,32 +123,19 @@ const handleCallbackQuerry = async () => {
           interpritationLanguageKeyboard(ctx.session?.language, "fromLang") // Show keyboard with languages to select to
         );
         aditionalOption = "";
+
         break;
 
       case "isThatCorrect":
-        // ctx.reply(
-        //   "Is that correct? " +
-        //     ctx.session?.languageFrom +
-        //     "->" +
-        //     ctx.session?.languageTo,
-        //   Markup.inlineKeyboard([
-        //     Markup.button.callback("Yes", "yesIsThatCorrect"),
-        //     Markup.button.callback("No", "noIsThatCorrect"),
-        //   ])
+        ctx.session.anliegen = "interpretationNeeded";
+        ctx.session.doWeNeedEmail = true;
+        ctx.reply(getAnswer(ctx.session?.language).sendEmail);
+
+        // await ctx.reply(
+        //   getAnswer(languageCallback).translateFrom,
+        //   interpritationLanguageKeyboard(languageCallback, "fromLang") // Show keyboard with languages to select from
         // );
-        ctx.reply(
-          getAnswer(ctx.session?.language).welcomeMessage,
-          Markup.inlineKeyboard([
-            Markup.button.callback(
-              getAnswer(ctx.session?.language).translationNeeded,
-              "translationNeeded"
-            ),
-            Markup.button.callback(
-              getAnswer(ctx.session?.language).interpretationNeeded,
-              "interpretationNeeded"
-            ),
-          ])
-        );
+
         aditionalOption = "";
         break;
 
@@ -151,6 +151,8 @@ const handleCallbackQuerry = async () => {
                     getAnswer(ctx.session?.language).callUs,
                     "callUs"
                   ),
+                ],
+                [
                   Markup.button.callback(
                     getAnswer(ctx.session?.language).fillOutForm,
                     "fillOutForm"
@@ -161,17 +163,28 @@ const handleCallbackQuerry = async () => {
             break;
 
           case "interpretationNeeded":
-            ctx.session.anliegen = "Übersetzung von Dokumenten";
-            ctx.session.doWeNeedEmail = true;
-            //ctx.reply(getAnswer(ctx.session?.language).interpretationNeededYes);
-            ctx.reply("Please send us your E-Mail address");
+            ctx.reply(
+              getAnswer(ctx.session?.language).translateFrom,
+              interpritationLanguageKeyboard(ctx.session?.language, "fromLang") // Show keyboard with languages to select to
+            );
+            aditionalOption = "";
+
+            // ctx.session.anliegen = "Übersetzung von Dokumenten";
+            // ctx.session.doWeNeedEmail = true;
+            // ctx.reply("Please send us your E-Mail address");
             break;
 
           case "callUs":
             ctx.reply(
               getAnswer(ctx.session?.language).callUsYes,
               Markup.inlineKeyboard([
-                Markup.button.url("Call us !", "https://lingoaa.com/kontakt/"),
+                [
+                  Markup.button.url(
+                    "Call us !",
+                    "https://lingoaa.com/kontakt/"
+                  ),
+                ],
+                [startOver(ctx.session?.language)],
               ])
             );
             break;
@@ -180,11 +193,13 @@ const handleCallbackQuerry = async () => {
             ctx.reply(
               getAnswer(ctx.session?.language).fillOutFormYes,
               Markup.inlineKeyboard([
-                Markup.button.url(
-                  "Fill out the form!",
-                  "https://lingoaa.com/dolmetscher-anfragen/"
-                ),
-                startOver(),
+                [
+                  Markup.button.url(
+                    getAnswer(ctx.session?.language).fillOutFormYes,
+                    "https://lingoaa.com/dolmetscher-anfragen/"
+                  ),
+                ],
+                [startOver(ctx.session?.language)],
               ])
             );
             break;
@@ -196,10 +211,16 @@ const handleCallbackQuerry = async () => {
 
           case "noUploadMoreDocs":
             ctx.reply(
-              "Beglaubigung  erforderlich? ",
+              getAnswer(ctx.session?.language).notarization,
               Markup.inlineKeyboard([
-                Markup.button.callback("Ja", "beglaubigungJa"),
-                Markup.button.callback("Nein", "beglaubigungNein"),
+                Markup.button.callback(
+                  getAnswer(ctx.session?.language).yes,
+                  "beglaubigungJa"
+                ),
+                Markup.button.callback(
+                  getAnswer(ctx.session?.language).no,
+                  "beglaubigungNein"
+                ),
               ])
             );
 
@@ -209,14 +230,14 @@ const handleCallbackQuerry = async () => {
             ctx.session.art = "Beglaubigung - Ja";
 
             sendDocumentsViaEmail(ctx);
-            userCallBack = "";
+
             break;
 
           case "beglaubigungNein":
             ctx.session.art = "Beglaubigung - Nein";
 
             sendDocumentsViaEmail(ctx);
-            userCallBack = "";
+
             break;
 
           case "startOver":
@@ -229,18 +250,14 @@ const handleCallbackQuerry = async () => {
             });
             break;
           default:
-            ctx.reply(
-              getAnswer(ctx.session?.language).selectFromOptions + "FROM SWITCH"
-            );
+            ctx.reply(getAnswer(ctx.session?.language).selectFromOptions);
             break;
           // }
           // return;
         }
         break;
       default:
-        ctx.reply(
-          getAnswer(ctx.session?.language).selectFromOptions + "FROM SWITCH"
-        );
+        ctx.reply(getAnswer(ctx.session?.language).selectFromOptions);
         break;
     }
   });
