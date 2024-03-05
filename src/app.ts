@@ -39,7 +39,7 @@ bot.start(async (ctx) => {
     languageTo: "",
     art: "",
     eMail: "",
-    doWeNeedEmaul: false,
+    doWeNeedEmail: false,
   };
 
   const chatId = ctx.chat?.id;
@@ -89,20 +89,24 @@ bot.on("text", async (ctx) => {
     });
     return;
   }
-
   if (
     ctx.session?.anliegen === "interpretationNeeded" &&
-    ctx.session?.doWeNeedEmaul === true
+    ctx.session?.doWeNeedEmail === true
   ) {
     ctx.session.eMail = ctx.message.text;
-    ctx.reply(
-      "E-Mail saved successfully " +
-        getAnswer(ctx.session?.language).interpretationNeededYes
-      // Markup.inlineKeyboard([
-      //   [Markup.button.callback("Continue", "translateFrom")],
-      // ])
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(ctx.session.eMail)) {
+      ctx.reply("Please enter a valid email address.");
+      return;
+    }
+    await ctx.reply(
+      ` E-Mail saved successfully\n\nE-Mail: ${ctx.session.eMail}`,
+      Markup.inlineKeyboard([
+        [Markup.button.callback("Edit my Email", "interpretationNeeded")],
+      ])
     );
-    ctx.session.doWeNeedEmaul = false;
+    ctx.reply(getAnswer(ctx.session?.language).interpretationNeededYes);
+    ctx.session.doWeNeedEmail = false;
   } else {
     ctx.reply(getAnswer(ctx.session.language).selectFromOptions);
   }
@@ -116,6 +120,21 @@ handleDocUpload();
 
 // Handle user's response to uploading more documents
 handleUserResponse();
+
+bot.use((ctx) => {
+  if (ctx.session === undefined) {
+    //ctx.session = {}; // Initialize session with default values if needed
+    ctx.reply(`You dint have status yet please press /start`, {
+      reply_markup: {
+        keyboard: [["/start"]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
+    return;
+  }
+  ctx.reply("Please select the provided options.");
+});
 
 bot.launch().then(() => {
   console.log("Bot is running!");

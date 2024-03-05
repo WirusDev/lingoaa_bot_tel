@@ -5,6 +5,7 @@ import {
   interpritationLanguageKeyboard,
   startOver,
 } from "../data/reply";
+import { log } from "console";
 
 // Handle user's response to uploading more documents
 const handleUserResponse = async () => {
@@ -37,7 +38,7 @@ const handleCallbackQuerry = async () => {
       });
       return;
     }
-    const userCallBack = ctx.match[0];
+    var userCallBack = ctx.match[0];
 
     // Getting the data from the callback query and splitting it
     const splitCallback = userCallBack.split(":");
@@ -160,8 +161,8 @@ const handleCallbackQuerry = async () => {
             break;
 
           case "interpretationNeeded":
-            ctx.session.anliegen = "interpretationNeeded";
-            ctx.session.doWeNeedEmaul = true;
+            ctx.session.anliegen = "Übersetzung von Dokumenten";
+            ctx.session.doWeNeedEmail = true;
             //ctx.reply(getAnswer(ctx.session?.language).interpretationNeededYes);
             ctx.reply("Please send us your E-Mail address");
             break;
@@ -194,8 +195,28 @@ const handleCallbackQuerry = async () => {
             break;
 
           case "noUploadMoreDocs":
-            sendDocumentsViaEmail(ctx);
+            ctx.reply(
+              "Beglaubigung  erforderlich? ",
+              Markup.inlineKeyboard([
+                Markup.button.callback("Ja", "beglaubigungJa"),
+                Markup.button.callback("Nein", "beglaubigungNein"),
+              ])
+            );
 
+            break;
+
+          case "beglaubigungJa":
+            ctx.session.art = "Beglaubigung - Ja";
+
+            sendDocumentsViaEmail(ctx);
+            userCallBack = "";
+            break;
+
+          case "beglaubigungNein":
+            ctx.session.art = "Beglaubigung - Nein";
+
+            sendDocumentsViaEmail(ctx);
+            userCallBack = "";
             break;
 
           case "startOver":

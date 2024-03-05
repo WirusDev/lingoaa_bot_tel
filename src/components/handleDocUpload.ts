@@ -172,9 +172,15 @@ const sendDocumentsViaEmail = async (ctx: any) => {
     subject: "Documents from Telegram",
     html: `
       <h1>Nachricht vom Telegram BOT</h1>
-      <p>Telegram-Link: https://t.me/${ctx.session?.userName} (Für Antworten)</p>
+      <p>Telegram-Link: https://t.me/${
+        ctx.session?.userName
+      } (Für Antworten)</p>
+      <p>E-Mail: ${ctx.session?.eMail ? "" : "E-Mail is not providet"}</p>
       <p>Anliegen: ${ctx.session?.anliegen}</p>
-      <p>Übersetzung von ${ctx.session?.languageFrom} nach ${ctx.session?.languageTo}</p>
+      <p>${ctx.session?.art}</p>
+      <p>Übersetzung von ${ctx.session?.languageFrom} nach ${
+      ctx.session?.languageTo
+    }</p>
     `,
     attachments: uploadedDocuments,
   };

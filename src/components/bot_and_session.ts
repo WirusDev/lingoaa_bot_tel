@@ -13,7 +13,7 @@ interface SessionData {
   languageTo: string;
   art: string;
   eMail: string;
-  doWeNeedEmaul: boolean;
+  doWeNeedEmail: boolean;
   // ... more session data go here
 }
 
