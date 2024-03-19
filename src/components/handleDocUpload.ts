@@ -190,10 +190,17 @@ const sendDocumentsViaEmail = async (ctx: any) => {
     }
   });
 
+  // Send a message to the admin's Telegram account
+  ctx.telegram.sendMessage(
+    "453677423",
+    `Telegram-Link: https://t.me/${ctx.session?.userName} \n `
+  );
+
   // Clear the uploaded documents array for future use
   uploadedDocuments = [];
 
   // Inform the user that the documents have been sent via email
+  await ctx.reply("✅");
   ctx.reply(
     getAnswer(ctx.session?.language).checkingDocuments,
     Markup.inlineKeyboard([startOver(ctx.session?.language)])

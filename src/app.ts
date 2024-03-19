@@ -7,7 +7,6 @@ import {
   handleCallbackQuerry,
 } from "./components/handleMessage";
 import { languageArray, getAnswer } from "./data/reply";
-import { get } from "http";
 
 bot.start(async (ctx) => {
   const keyboard = Markup.inlineKeyboard(
@@ -44,6 +43,7 @@ bot.start(async (ctx) => {
   };
 
   const chatId = ctx.chat?.id;
+  console.log("ChatId: ", chatId);
 
   if (chatId) {
     ctx.reply("Please Select your Language", keyboard);
@@ -129,6 +129,7 @@ handleDocUpload();
 // Handle user's response to uploading more documents
 handleUserResponse();
 
+// Handle the everything else
 bot.use((ctx) => {
   if (ctx.session === undefined) {
     //ctx.session = {}; // Initialize session with default values if needed

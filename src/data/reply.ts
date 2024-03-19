@@ -628,6 +628,8 @@ const getAnswer = (language: string) => {
   }
 };
 
+getAnswer("🇬🇧 English").welcomeMessage;
+
 const interpritationLanguageKeyboard = (
   lang: string,
   aditionalOption: string
